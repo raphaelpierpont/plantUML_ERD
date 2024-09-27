@@ -1,0 +1,105 @@
+@startuml
+'----------------------------------------
+' Import the procedures from ERD_procedures.puml
+!include ERD_procedures.puml
+
+'----------------------------------------
+' Configuration for node visibility, colors, and links
+'----------------------------------------
+
+!$hide = {
+    "terms": [
+        '{"term":"_)(*&^%$?#"}',
+        '{"term":"_shadow"}',
+        '{"term":"tmp"}'
+    ]
+}
+
+!$search = {
+    "terms": [
+        '{"term":""}
+        {"term":"film"}
+        ,{"term":"actor"}
+        ',{"term":"category"}
+        ',{"term":"store"}
+        ',{"term":"rental"}
+        ',{"term":"inventory"}
+    ]
+}
+
+!$showMainLinks = 1
+!$showAlternateLinks = 4
+
+
+'----------------------------------------
+' Table Definitions for Sakila Database
+'----------------------------------------
+
+$table("film")
+$pk("film", "film_id", "INT")
+$cl("film", "title", "VARCHAR(255)")
+$cl("film", "description", "TEXT")
+$cl("film", "release_year", "YEAR")
+$fk("film", "language_id", "INT")
+$fk("film", "original_language_id", "INT")
+$cl("film", "rental_duration", "INT")
+$cl("film", "rental_rate", "DECIMAL(4,2)")
+$cl("film", "length", "INT")
+$cl("film", "replacement_cost", "DECIMAL(5,2)")
+$cl("film", "rating", "VARCHAR(10)")
+$cl("film", "last_update", "TIMESTAMP")
+
+$table("actor")
+$pk("actor", "actor_id", "INT")
+$cl("actor", "first_name", "VARCHAR(45)")
+$cl("actor", "last_name", "VARCHAR(45)")
+$cl("actor", "last_update", "TIMESTAMP")
+
+$table("category")
+$pk("category", "category_id", "INT")
+$cl("category", "name", "VARCHAR(25)")
+$cl("category", "last_update", "TIMESTAMP")
+
+$table("film_actor")
+$pk("film_actor", "actor_id", "INT")
+$pk("film_actor", "film_id", "INT")
+$cl("film_actor", "last_update", "TIMESTAMP")
+
+$table("film_category")
+$pk("film_category", "film_id", "INT")
+$pk("film_category", "category_id", "INT")
+$cl("film_category", "last_update", "TIMESTAMP")
+
+$table("store")
+$pk("store", "store_id", "INT")
+$cl("store", "manager_staff_id", "INT")
+$cl("store", "address_id", "INT")
+$cl("store", "last_update", "TIMESTAMP")
+
+$table("inventory")
+$pk("inventory", "inventory_id", "INT")
+$fk("inventory", "film_id", "INT")
+$fk("inventory", "store_id", "INT")
+$cl("inventory", "last_update", "TIMESTAMP")
+
+$table("rental")
+$pk("rental", "rental_id", "INT")
+$fk("rental", "inventory_id", "INT")
+$fk("rental", "customer_id", "INT")
+$cl("rental", "rental_date", "TIMESTAMP")
+$cl("rental", "return_date", "TIMESTAMP")
+$cl("rental", "last_update", "TIMESTAMP")
+
+'----------------------------------------
+' Relationships between tables
+'----------------------------------------
+
+$n1("actor", "film_actor")
+$n1("film", "film_actor")
+$n1("film", "film_category")
+$n1("category", "film_category")
+$n1("store", "inventory")
+$n1("film", "inventory")
+$n1("rental", "inventory")
+
+@enduml
