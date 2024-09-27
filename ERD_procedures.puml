@@ -1,0 +1,197 @@
+@startuml
+'----------------------------------------
+' Define procedures for tables, columns, and relationships
+'----------------------------------------
+skinparam defaultFontName monospaced
+skinparam groupInheritance 3
+left to right direction
+'----------------------------------------
+' Define color parameters
+'----------------------------------------
+' Default color for main nodes
+!$mainNodeColor = "99FFD3"             
+' Color for alternate nodes
+!$alternateNodeColor = "BBD4DD"        
+' Color for hidden nodes
+!$hiddenNodeColor = "F2F5F8"           
+' Color for PK/FK spots
+!$spotColor = "004F2D"                 
+' Color for main links
+!$mainLinkColor = "000000"             
+' Color for alternate links
+!$alternateLinkColor = "000"        
+' Font color for data types
+!$fontColor = "grey"                    
+
+
+' Controls main link visibility (1: show without labels, 2: show with labels, 3: detailed view)
+!$showMainLinks = 1                     
+' Controls alternate link visibility (0: none, 1: visible, 2: hidden)
+!$showAlternateLinks = 0                
+' Controls the brightness of alternate links
+!$alternateLinkBrightness = 50          
+
+'----------------------------------------
+' Procedures for tables, columns, and relationships
+'----------------------------------------
+
+!procedure $table($name) 
+                    !$isHidden = 1
+    !foreach $s in $search.terms 
+        !foreach $h in $hide.terms 
+            !if (%strpos($name,$h.term) >= 0)  
+                !$isHidden = 2
+            !endif
+            !if  (%strpos($name,$s.term) >= 0 )
+                    !$isHidden = 0
+            !endif
+        !endfor
+    !endfor
+        !if ($isHidden == 0)  
+            class $name <<(T,#$spotColor)>> #$mainNodeColor;line:$mainLinkColor
+        !elseif ($isHidden == 1)  
+            class $name <<(T,#$spotColor)>> #$alternateNodeColor;line:$mainLinkColor
+        !else
+            class $name <<(T,#$spotColor)>> #$hiddenNodeColor;line.dotted:$mainLinkColor
+        !endif
+!endprocedure
+
+!function $datatype($p_datatype)
+    !$return = "<color:" + $fontColor + ">" + $rpad($p_datatype, 15) + "</color>"
+    !return $return
+!endfunction
+
+!procedure $pk($p_table, $p_column, $p_datatype)
+    $p_table : {method} <<PK>> $datatype($p_datatype) $u($b($p_column))
+!endprocedure
+
+!procedure $fk($p_table, $p_column, $p_datatype)
+    $p_table : {method} <<FK>> $datatype($p_datatype) $u($p_column)
+!endprocedure
+
+!procedure $cl($p_table, $p_column, $p_datatype)
+    $p_table : {method} $rpad($b(" "),11) $datatype($p_datatype) $p_column
+!endprocedure
+
+!procedure $un($p_table, $p_column)
+    $p_table : {method} <<UN>> $datatype($p_datatype) <color:green>$p_column</color>
+!endprocedure
+
+!procedure $nn($p_table, $p_column, $p_datatype)
+    $p_table : {method} $rpad($b(" "),16) $datatype($p_datatype) %u($p_column)
+!endprocedure
+
+!procedure $n1($tableN, $table1, $columnN=" ", $column1=" ")
+    !foreach $s in $search.terms 
+        !if  (%strpos($tableN,$s.term) >= 0 || %strpos($table1,$s.term) >= 0)
+            !$isHidden = 0
+            !foreach $h in $hide.terms 
+                !if (%strpos($tableN,$h.term) >= 0 || %strpos($table1,$h.term) >= 0)  
+                    !$isHidden = 1
+                !endif
+            !endfor
+        !endif
+    !endfor
+        !if ($isHidden == 0)  
+            !if ($showMainLinks == 1)
+                $tableN --* $table1 
+            !elseif ($showMainLinks == 2)
+                $tableN --* $table1 : $columnN = $column1 
+            !elseif ($showMainLinks == 3)
+                $tableN::$columnN  --* $table1::$column1 
+            !elseif ($showMainLinks == 4)
+                $tableN "$columnN" --* "$column1" $table1 
+            !endif
+        !else
+            !if ($showAlternateLinks == 1)
+                $table1 *.[%lighten($alternateLinkColor, $alternateLinkBrightness)]. $tableN
+            !elseif ($showAlternateLinks == 2)
+                $table1 *.[norank]. $tableN %lighten($alternateLinkColor, $alternateLinkBrightness)
+            !elseif ($showAlternateLinks == 3)
+                $tableN::$columnN  .[norank].*  $table1::$column1 %lighten($alternateLinkColor, $alternateLinkBrightness)
+            !elseif ($showAlternateLinks == 4)
+                $tableN "$columnN" .[norank].* "$column1" $table1 %lighten($alternateLinkColor, $alternateLinkBrightness)
+            !endif
+        !endif
+!endprocedure
+
+!procedure $nm($tableN, $tableM)
+    !$crosstable = $tableM + "X" + $tableN
+    '$n1($tableM, $crosstable)
+    '$n1($tableN, $crosstable)
+    
+$tableN "0..*" - "1..*" $tableM
+($tableN, $tableM) .. $crosstable
+!endprocedure
+
+'----------------------------------------
+' Supporting functions
+'----------------------------------------
+!function $b($inputString)
+    !return "<b>" + $inputString + "</b>"
+!endfunction
+
+!function $u($inputString)
+    !return "<u>" + $inputString + "</u>"
+!endfunction
+
+!function $lpad($inputString, $desiredLength)
+    !$currentLength = %strlen($inputString)
+    !$paddingLength = $desiredLength - $currentLength
+    !$padding = ""
+    !if ($paddingLength > 0)
+        !$spaceString = "                                                    "  
+        !$padding = %substr($spaceString, 0, $paddingLength)
+    !endif
+    !return $padding + $inputString
+!endfunction
+
+!function $rpad($inputString, $desiredLength)
+    !$currentLength = %strlen($inputString)
+    !$paddingLength = $desiredLength - $currentLength
+    !$padding = ""
+    !if ($paddingLength > 0)
+        !$spaceString = "                                           "  
+        !$padding = %substr($spaceString, 0, $paddingLength)
+    !endif
+    !return $inputString + $padding
+!endfunction
+
+'----------------------------------------
+' Help Function
+'----------------------------------------
+!procedure $help()
+    !$helpText = ""
+    !$helpText = $helpText + "Help Information:\n"
+    !$helpText = $helpText + "Color Parameters:\n"
+    !$helpText = $helpText + "- $mainNodeColor: Main node color.\n"
+    !$helpText = $helpText + "- $alternateNodeColor: Alternate node color.\n"
+    !$helpText = $helpText + "- $hiddenNodeColor: Hidden node color.\n"
+    !$helpText = $helpText + "- $spotColor: Color for PK/FK spots.\n"
+    !$helpText = $helpText + "- $mainLinkColor: Color for main links.\n"
+    !$helpText = $helpText + "- $alternateLinkColor: Color for alternate links.\n"
+    !$helpText = $helpText + "- $fontColor: Font color for datatypes.\n\n"
+    
+    !$helpText = $helpText + "Procedures:\n"
+    !$helpText = $helpText + "- $table(name): Creates a table node. Controls visibility via search/hide terms.\n"
+    !$helpText = $helpText + "- $pk(table, column, datatype): Adds a primary key to a table.\n"
+    !$helpText = $helpText + "- $fk(table, column, datatype): Adds a foreign key to a table.\n"
+    !$helpText = $helpText + "- $cl(table, column, datatype): Adds a column to a table.\n"
+    !$helpText = $helpText + "- $un(table, column): Adds a unique constraint column.\n"
+    !$helpText = $helpText + "- $nn(table, column, datatype): Adds a non-null constraint column.\n"
+    !$helpText = $helpText + "- $n1(tableN, table1, columnN, column1): Creates a one-to-many relationship.\n"
+    !$helpText = $helpText + "- $nm(tableN, tableM): Creates a many-to-many relationship.\n\n"
+    
+    !$helpText = $helpText + "Supporting Functions:\n"
+    !$helpText = $helpText + "- $b(inputString): Returns bold formatted text.\n"
+    !$helpText = $helpText + "- $u(inputString): Returns underlined formatted text.\n"
+    !$helpText = $helpText + "- $lpad(inputString, desiredLength): Left pads a string to the specified length.\n"
+    !$helpText = $helpText + "- $rpad(inputString, desiredLength): Right pads a string to the specified length.\n"
+    
+    $helpText
+!endprocedure
+
+' Display help information
+'$help()
+
+@enduml
