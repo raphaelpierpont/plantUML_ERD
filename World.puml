@@ -1,0 +1,59 @@
+@startuml
+!include ERD_procedures.puml
+
+'----------------------------------------
+' Configuration for node visibility, colors, and links
+'----------------------------------------
+
+!$hide = {
+    "terms": [
+        {"term":"City"}
+    ]
+}
+
+!$search = {
+    "terms": [
+        '{"term":"Country"},
+        {"term":"CountryLanguage"}
+    ]
+}
+
+!$showMainLinks = 1
+!$showAlternateLinks = 1
+
+
+'----------------------------------------
+' Table Definitions for World Database
+'----------------------------------------
+
+$table("Country")
+$pk("Country", "country_code", "CHAR(3)")
+$cl("Country", "name", "VARCHAR(50)")
+$cl("Country", "continent", "VARCHAR(50)")
+$cl("Country", "region", "VARCHAR(50)")
+$cl("Country", "population", "INT")
+$cl("Country", "surface_area", "DECIMAL(10,2)")
+$cl("Country", "indep_year", "YEAR")
+$cl("Country", "life_expectancy", "DECIMAL(3,1)")
+
+$table("City")
+$pk("City", "city_id", "INT")
+$cl("City", "name", "VARCHAR(50)")
+$fk("City", "country_code", "CHAR(3)")
+$cl("City", "district", "VARCHAR(50)")
+$cl("City", "population", "INT")
+
+$table("CountryLanguage")
+$pk("CountryLanguage", "country_code", "CHAR(3)")
+$pk("CountryLanguage", "language", "VARCHAR(50)")
+$cl("CountryLanguage", "is_official", "BOOLEAN")
+$cl("CountryLanguage", "percentage", "DECIMAL(4,1)")
+
+'----------------------------------------
+' Relationships between tables
+'----------------------------------------
+
+$n1("Country", "City", "country_code", "country_code")
+$n1("Country", "CountryLanguage", "country_code", "country_code")
+
+@enduml
