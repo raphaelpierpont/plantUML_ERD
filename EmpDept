@@ -1,0 +1,58 @@
+@startuml
+!include ERD_procedures.puml
+
+'----------------------------------------
+' Configuration for node visibility, colors, and links
+'----------------------------------------
+
+!$hide = {
+    "terms": []
+}
+
+!$search = {
+    "terms": [
+        {"term":"EMP"},
+        {"term":"DEPT"},
+        {"term":"SALARY"},
+        {"term":"JOB"}
+    ]
+}
+
+!$showMainLinks = 4
+!$showAlternateLinks = 0
+
+
+'----------------------------------------
+' Table Definitions for Extended EMP DEPT Database
+'----------------------------------------
+
+$table("EMP")
+$pk("EMP", "emp_id", "INT")
+$cl("EMP", "emp_name", "VARCHAR(50)")
+$cl("EMP", "job", "VARCHAR(50)")
+$fk("EMP", "dept_id", "INT")
+$fk("EMP", "manager_id", "INT")
+$cl("EMP", "hire_date", "DATE")
+$cl("EMP", "salary", "DECIMAL(10,2)")
+$cl("EMP", "comm", "DECIMAL(7,2)")
+
+$table("DEPT")
+$pk("DEPT", "dept_id", "INT")
+$cl("DEPT", "dept_name", "VARCHAR(50)")
+$cl("DEPT", "location", "VARCHAR(50)")
+
+$table("SALARY_GRADE")
+$pk("SALARY_GRADE", "grade", "INT")
+$cl("SALARY_GRADE", "low_salary", "DECIMAL(10,2)")
+$cl("SALARY_GRADE", "high_salary", "DECIMAL(10,2)")
+
+'----------------------------------------
+' Relationships between tables
+'----------------------------------------
+
+$n1("EMP", "DEPT", "dept_id", "dept_id")
+$n1("EMP", "EMP", "manager_id", "emp_id") 
+' self-join for manager relationships
+$n1("EMP", "SALARY_GRADE")
+
+@enduml
